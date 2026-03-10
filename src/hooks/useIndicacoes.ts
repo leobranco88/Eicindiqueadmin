@@ -1,11 +1,8 @@
-// src/hooks/useIndicacoes.ts
 import { useState, useEffect } from "react";
 import {
   collection,
   onSnapshot,
   addDoc,
-  updateDoc,
-  doc,
   serverTimestamp,
   query,
   orderBy,
@@ -13,159 +10,139 @@ import {
 import { db } from "../lib/firebase";
 
 export type StatusIndicacao =
+  | "Aguardando confirmação"
   | "Aguardando contato"
   | "Em avaliação"
   | "Matriculado";
 
 export interface Indicacao {
   id: string;
-  nomeResponsavel: string;
   nomeIndicado: string;
   whatsappIndicado: string;
+  nomeResponsavel: string;
+  responsavelId: string;
   status: StatusIndicacao;
   criadoEm: string;
+  origem: "admin" | "pai";
+}
+
+export interface Responsavel {
+  id: string;
+  nome: string;
+  whatsapp: string;
+  nomeFilho: string;
   responsavelId: string;
+  criadoEm: string;
 }
 
-// Calcula o nível de fidelidade baseado em matrículas confirmadas
-export function calcularNivel(matriculados: number): {
-  nivel: string;
-  cor: string;
-  proximoNivel: string | null;
-  faltam: number;
-  beneficio: string;
-} {
-  if (matriculados >= 4) {
-    return {
-      nivel: "Ambassador",
-      cor: "#FF5C00",
-      proximoNivel: null,
-      faltam: 0,
-      beneficio: "R$50 por matrícula acumulado",
-    };
-  } else if (matriculados === 3) {
-    return {
-      nivel: "Ouro",
-      cor: "#F5A800",
-      proximoNivel: "Ambassador",
-      faltam: 1,
-      beneficio: "1 mensalidade grátis (R$320)",
-    };
-  } else if (matriculados === 2) {
-    return {
-      nivel: "Prata",
-      cor: "#9CA3AF",
-      proximoNivel: "Ouro",
-      faltam: 1,
-      beneficio: "Badge + reconhecimento",
-    };
-  } else if (matriculados === 1) {
-    return {
-      nivel: "Bronze",
-      cor: "#92400E",
-      proximoNivel: "Prata",
-      faltam: 1,
-      beneficio: "Badge + reconhecimento",
-    };
-  } else {
-    return {
-      nivel: "Sem nível",
-      cor: "#6B7280",
-      proximoNivel: "Bronze",
-      faltam: 1,
-      beneficio: "—",
-    };
-  }
+export type Nivel = "iniciante" | "bronze" | "prata" | "ouro" | "ambassador";
+
+export function gerarResponsavelId(nome: string): string {
+  return nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
-// Agrupa indicações por responsável e calcula nível
-export function calcularRanking(indicacoes: Indicacao[]) {
-  const mapa: Record<
-    string,
-    {
-      responsavelId: string;
-      nomeResponsavel: string;
-      total: number;
-      matriculados: number;
-      emAvaliacao: number;
-      aguardando: number;
-      indicacoes: Indicacao[];
-    }
-  > = {};
+export function calcularNivel(matriculados: number): Nivel {
+  if (matriculados >= 4) return "ambassador";
+  if (matriculados >= 3) return "ouro";
+  if (matriculados >= 2) return "prata";
+  if (matriculados >= 1) return "bronze";
+  return "iniciante";
+}
 
-  for (const ind of indicacoes) {
-    if (!mapa[ind.responsavelId]) {
-      mapa[ind.responsavelId] = {
-        responsavelId: ind.responsavelId,
-        nomeResponsavel: ind.nomeResponsavel,
-        total: 0,
-        matriculados: 0,
-        emAvaliacao: 0,
-        aguardando: 0,
-        indicacoes: [],
+export function calcularRanking(
+  responsaveis: Responsavel[],
+  indicacoes: Indicacao[]
+): Array<Responsavel & { totalIndicacoes: number; matriculados: number; nivel: Nivel }> {
+  return responsaveis
+    .map((r) => {
+      const inds = indicacoes.filter((i) => i.responsavelId === r.responsavelId);
+      const matriculados = inds.filter((i) => i.status === "Matriculado").length;
+      return {
+        ...r,
+        totalIndicacoes: inds.length,
+        matriculados,
+        nivel: calcularNivel(matriculados),
       };
-    }
-    mapa[ind.responsavelId].total++;
-    mapa[ind.responsavelId].indicacoes.push(ind);
-    if (ind.status === "Matriculado") mapa[ind.responsavelId].matriculados++;
-    if (ind.status === "Em avaliação") mapa[ind.responsavelId].emAvaliacao++;
-    if (ind.status === "Aguardando contato") mapa[ind.responsavelId].aguardando++;
-  }
-
-  return Object.values(mapa).map((r) => ({
-    ...r,
-    ...calcularNivel(r.matriculados),
-  }));
+    })
+    .sort((a, b) => b.matriculados - a.matriculados);
 }
 
 export function useIndicacoes() {
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
+  const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cadastrando, setCadastrando] = useState(false);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "indicacoes"),
-      orderBy("criadoEm", "desc")
-    );
+    const q1 = query(collection(db, "indicacoes"), orderBy("criadoEm", "desc"));
+    const unsub1 = onSnapshot(q1, (snap) => {
+      setIndicacoes(
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          criadoEm: doc.data().criadoEm?.toDate?.()?.toISOString() ?? new Date().toISOString(),
+        })) as Indicacao[]
+      );
+    });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        criadoEm:
-          doc.data().criadoEm?.toDate?.()?.toISOString() ??
-          new Date().toISOString(),
-      })) as Indicacao[];
-
-      setIndicacoes(data);
+    const q2 = query(collection(db, "responsaveis"), orderBy("criadoEm", "desc"));
+    const unsub2 = onSnapshot(q2, (snap) => {
+      setResponsaveis(
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          criadoEm: doc.data().criadoEm?.toDate?.()?.toISOString() ?? new Date().toISOString(),
+        })) as Responsavel[]
+      );
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => { unsub1(); unsub2(); };
   }, []);
 
-  const adicionarIndicacao = async (data: {
-    nomeResponsavel: string;
+  const cadastrarResponsavel = async (dados: { nome: string; whatsapp: string; nomeFilho: string }) => {
+    setCadastrando(true);
+    try {
+      const responsavelId = gerarResponsavelId(dados.nome);
+      await addDoc(collection(db, "responsaveis"), {
+        nome: dados.nome,
+        whatsapp: dados.whatsapp,
+        nomeFilho: dados.nomeFilho,
+        responsavelId,
+        criadoEm: serverTimestamp(),
+      });
+      return responsavelId;
+    } finally {
+      setCadastrando(false);
+    }
+  };
+
+  const adicionarIndicacao = async (dados: {
     nomeIndicado: string;
     whatsappIndicado: string;
+    nomeResponsavel: string;
+    responsavelId: string;
+    status: StatusIndicacao;
   }) => {
-    const responsavelId = data.nomeResponsavel
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "-");
-
     await addDoc(collection(db, "indicacoes"), {
-      ...data,
-      responsavelId,
-      status: "Aguardando contato",
+      ...dados,
+      origem: "admin",
       criadoEm: serverTimestamp(),
     });
   };
 
-  const atualizarStatus = async (id: string, status: StatusIndicacao) => {
-    await updateDoc(doc(db, "indicacoes", id), { status });
+  return {
+    indicacoes,
+    responsaveis,
+    loading,
+    cadastrando,
+    cadastrarResponsavel,
+    adicionarIndicacao,
+    ranking: calcularRanking(responsaveis, indicacoes),
   };
-
-  return { indicacoes, loading, adicionarIndicacao, atualizarStatus };
 }
