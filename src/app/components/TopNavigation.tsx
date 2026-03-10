@@ -5,6 +5,7 @@ import logoSvg from "../../imports/logo.svg";
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard, activeColor: "#FF5C00", disabled: false },
   { path: "/indicacoes", label: "Indicações", icon: Users, activeColor: "#6B3FA0", disabled: false },
+  { path: "/resgates", label: "Resgates", icon: Banknote, activeColor: "#10B981", disabled: false },
   { path: "/relatorios", label: "Relatórios", icon: FileText, activeColor: "#F5A800", disabled: true },
   { path: "/configuracoes", label: "Configurações", icon: Settings, activeColor: "#070738", disabled: true },
 ];
