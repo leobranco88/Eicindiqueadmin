@@ -3,14 +3,16 @@ import { Users, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useIndicacoes, calcularRanking } from "../../hooks/useIndicacoes";
 
-const NIVEL_CORES: Record<string, { bg: string; text: string; border: string }> = {
-  Ambassador: { bg: "#FFF3ED", text: "#FF5C00", border: "#FF5C00" },
-  Ouro:       { bg: "#FFFBEB", text: "#F5A800", border: "#F5A800" },
-  Prata:      { bg: "#F3F4F6", text: "#6B7280", border: "#9CA3AF" },
-  Bronze:     { bg: "#FEF3C7", text: "#92400E", border: "#92400E" },
-  Iniciante:  { bg: "#F5F3FF", text: "#6B3FA0", border: "#6B3FA0" },
-  "Sem nível":{ bg: "#F9FAFB", text: "#9CA3AF", border: "#E5E7EB" },
-};
+const FALLBACK_COR = { bg: "#F9FAFB", text: "#9CA3AF", border: "#E5E7EB" };
+
+function getCores(nivel: string) {
+  if (nivel === "Ambassador") return { bg: "#FFF3ED", text: "#FF5C00", border: "#FF5C00" };
+  if (nivel === "Ouro")       return { bg: "#FFFBEB", text: "#F5A800", border: "#F5A800" };
+  if (nivel === "Prata")      return { bg: "#F3F4F6", text: "#6B7280", border: "#9CA3AF" };
+  if (nivel === "Bronze")     return { bg: "#FEF3C7", text: "#92400E", border: "#92400E" };
+  if (nivel === "Iniciante")  return { bg: "#F5F3FF", text: "#6B3FA0", border: "#6B3FA0" };
+  return FALLBACK_COR;
+}
 
 const STATUS_CORES: Record<string, string> = {
   "Matriculado":          "bg-green-100 text-green-700",
@@ -69,8 +71,8 @@ export function Indicacoes() {
         ) : (
           <div className="space-y-3">
             {ranking.map((resp, index) => {
-              const FALLBACK_COR = { bg: "#F9FAFB", text: "#9CA3AF", border: "#E5E7EB" };
-              const cores = NIVEL_CORES[resp.nivel] ?? FALLBACK_COR;
+              
+              const cores = getCores(resp.nivel);
               const isOpen = expandido === resp.responsavelId;
               const fidelidadeUrl = `https://eicfidelidade.vercel.app/f/${resp.responsavelId}`;
 
