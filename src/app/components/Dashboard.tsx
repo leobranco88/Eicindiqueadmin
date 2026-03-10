@@ -52,7 +52,7 @@ export function Dashboard() {
       "Em avaliação": { bg: "#FEF3C7", text: "#92400E", border: "#FDE68A" },
       Matriculado: { bg: "#D1FAE5", text: "#065F46", border: "#A7F3D0" },
     };
-    const colors = styles[status];
+    const colors = styles[status] ?? { bg: "#F3F4F6", text: "#6B7280", border: "#E5E7EB" };
     return (
       <span
         className="px-3 py-1 rounded-full text-xs font-semibold border"
