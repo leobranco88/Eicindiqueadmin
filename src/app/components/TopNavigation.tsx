@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Banknote, FileText, Settings } from "lucide-react";
 import logoSvg from "../../imports/logo.svg";
 
 const navItems = [
