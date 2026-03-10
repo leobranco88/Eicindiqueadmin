@@ -1,0 +1,19 @@
+:root {
+  /* EIC Brand Colors */
+  --eic-brown: #573000;
+  --eic-orange: #EC5800;
+  --eic-blue: #070738;
+  --eic-gray: #3D3D3D;
+  --eic-bg: #F5F2EE;
+  --eic-card: #FFFFFF;
+  --eic-success: #10B981;
+  
+  /* Override global background */
+  --background: #F5F2EE;
+}
+
+@layer base {
+  body {
+    background: var(--eic-bg);
+  }
+}

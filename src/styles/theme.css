@@ -1,0 +1,39 @@
+@import "./tailwind.css";
+
+:root {
+  /* EIC Official Brand Colors */
+  --color-primary: #FF5C00;        /* Laranja - ação, energia */
+  --color-secondary: #6B3FA0;      /* Roxo - identidade, pertencimento */
+  --color-tertiary: #070738;       /* Azul - profundidade, cultura */
+  --color-highlight: #F5A800;      /* Amarelo - conquistas, celebração */
+  
+  /* Status Badge Colors */
+  --color-success: #10B981;        /* Green for Matriculado */
+  --color-success-light: #D1FAE5;
+  --color-success-dark: #065F46;
+  --color-warning: #F59E0B;        /* Amber for Em avaliação */
+  --color-warning-light: #FEF3C7;
+  --color-warning-dark: #92400E;
+  
+  /* Neutrals */
+  --color-text: #070738;           /* Azul EIC para textos principais */
+  --color-text-secondary: #3D3D3D; /* Cinza para textos secundários */
+  --color-text-light: #6B7280;     /* Medium gray */
+  --color-bg: #F8F6FF;             /* Fundo com toque lilás */
+  --color-bg-card: #FFFFFF;        /* Branco para cards */
+  --color-border: #E5E7EB;         /* Light border */
+  
+  /* Typography - EIC Official */
+  --font-display: 'Cormorant Garamond', serif;  /* Títulos e frases de impacto */
+  --font-body: 'DM Sans', 'Plus Jakarta Sans', sans-serif;  /* Interface */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+h1, h2, h3, .display-text {
+  font-family: var(--font-display);
+}
