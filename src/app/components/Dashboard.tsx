@@ -8,7 +8,7 @@ import { ReferralModal } from "./ReferralModal";
 import { RecentActivity } from "./RecentActivity";
 import { PerformanceChart } from "./PerformanceChart";
 import { LoyaltyCardPreview } from "./LoyaltyCardPreview";
-import { useIndicacoes, type StatusIndicacao } from "../hooks/useIndicacoes";
+import { useIndicacoes, type StatusIndicacao } from "../../hooks/useIndicacoes";
 
 export function Dashboard() {
   const { indicacoes, loading, adicionarIndicacao, atualizarStatus } = useIndicacoes();
