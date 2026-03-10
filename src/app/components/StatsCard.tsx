@@ -28,7 +28,7 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "#573000", 
         >
           <Icon size={24} style={{ color }} />
         </div>
-        
+
         {trend && (
           <div
             className={`px-2 py-1 rounded-md text-xs font-semibold ${
@@ -49,9 +49,9 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "#573000", 
         </div>
         <div
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             fontSize: '32px',
-            fontWeight: 600,
+            fontWeight: 700,
             color: color,
           }}
         >
