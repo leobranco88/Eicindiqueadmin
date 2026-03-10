@@ -69,7 +69,8 @@ export function Indicacoes() {
         ) : (
           <div className="space-y-3">
             {ranking.map((resp, index) => {
-              const cores = NIVEL_CORES[resp.nivel] ?? NIVEL_CORES["Sem nível"];
+              const FALLBACK_COR = { bg: "#F9FAFB", text: "#9CA3AF", border: "#E5E7EB" };
+              const cores = NIVEL_CORES[resp.nivel] ?? FALLBACK_COR;
               const isOpen = expandido === resp.responsavelId;
               const fidelidadeUrl = `https://eicfidelidade.vercel.app/f/${resp.responsavelId}`;
 
