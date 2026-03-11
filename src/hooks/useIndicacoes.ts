@@ -3,6 +3,8 @@ import {
   collection,
   onSnapshot,
   addDoc,
+  updateDoc,
+  doc,
   serverTimestamp,
   query,
   orderBy,
@@ -58,9 +60,9 @@ export function calcularRanking(
   responsaveis: Responsavel[],
   indicacoes: Indicacao[]
 ): Array<Responsavel & { totalIndicacoes: number; matriculados: number; nivel: Nivel }> {
-  return responsaveis
+  return (responsaveis ?? [])
     .map((r) => {
-      const inds = indicacoes.filter((i) => i.responsavelId === r.responsavelId);
+      const inds = (indicacoes ?? []).filter((i) => i.responsavelId === r.responsavelId);
       const matriculados = inds.filter((i) => i.status === "Matriculado").length;
       return {
         ...r,
@@ -75,7 +77,8 @@ export function calcularRanking(
 export function useIndicacoes() {
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingIndicacoes, setLoadingIndicacoes] = useState(true);
+  const [loadingResponsaveis, setLoadingResponsaveis] = useState(true);
   const [cadastrando, setCadastrando] = useState(false);
 
   useEffect(() => {
@@ -88,6 +91,7 @@ export function useIndicacoes() {
           criadoEm: doc.data().criadoEm?.toDate?.()?.toISOString() ?? new Date().toISOString(),
         })) as Indicacao[]
       );
+      setLoadingIndicacoes(false);
     });
 
     const q2 = query(collection(db, "responsaveis"), orderBy("criadoEm", "desc"));
@@ -99,7 +103,7 @@ export function useIndicacoes() {
           criadoEm: doc.data().criadoEm?.toDate?.()?.toISOString() ?? new Date().toISOString(),
         })) as Responsavel[]
       );
-      setLoading(false);
+      setLoadingResponsaveis(false);
     });
 
     return () => { unsub1(); unsub2(); };
@@ -125,24 +129,35 @@ export function useIndicacoes() {
   const adicionarIndicacao = async (dados: {
     nomeIndicado: string;
     whatsappIndicado: string;
-    nomeResponsavel: string;
-    responsavelId: string;
-    status: StatusIndicacao;
+    nomeResponsavel?: string;
+    responsavelId?: string;
+    status?: StatusIndicacao;
   }) => {
     await addDoc(collection(db, "indicacoes"), {
-      ...dados,
+      nomeIndicado: dados.nomeIndicado,
+      whatsappIndicado: dados.whatsappIndicado,
+      nomeResponsavel: dados.nomeResponsavel ?? "",
+      responsavelId: dados.responsavelId ?? "",
+      status: dados.status ?? "Aguardando contato",
       origem: "admin",
       criadoEm: serverTimestamp(),
     });
   };
 
+  const atualizarStatus = async (id: string, status: StatusIndicacao) => {
+    await updateDoc(doc(db, "indicacoes", id), { status });
+  };
+
+  const loading = loadingIndicacoes || loadingResponsaveis;
+
   return {
-    indicacoes,
-    responsaveis,
+    indicacoes: indicacoes ?? [],
+    responsaveis: responsaveis ?? [],
     loading,
     cadastrando,
     cadastrarResponsavel,
     adicionarIndicacao,
+    atualizarStatus,
     ranking: calcularRanking(responsaveis ?? [], indicacoes ?? []),
   };
 }
