@@ -266,7 +266,7 @@ export function Indicacoes() {
   const [modalAberto, setModalAberto] = useState(false);
   const [busca, setBusca] = useState("");
 
-  const rankingFiltrado = ranking.filter((r) =>
+  const rankingFiltrado = (ranking ?? []).filter((r) =>
     r.nome.toLowerCase().includes(busca.toLowerCase()) ||
     r.nomeFilho.toLowerCase().includes(busca.toLowerCase())
   );
@@ -314,7 +314,7 @@ export function Indicacoes() {
             { label: "Responsáveis", value: responsaveis.length, color: "#6B3FA0", bg: "#EDE7F6" },
             { label: "Indicações", value: indicacoes.length, color: "#FF5C00", bg: "#FFF3ED" },
             { label: "Matriculados", value: indicacoes.filter(i => i.status === "Matriculado").length, color: "#22C55E", bg: "#F0FDF4" },
-            { label: "Ambassadors", value: ranking.filter(r => r.nivel === "ambassador").length, color: "#F5A800", bg: "#FEF9C3" },
+            { label: "Ambassadors", value: (ranking ?? []).filter(r => r.nivel === "ambassador").length, color: "#F5A800", bg: "#FEF9C3" },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl p-4 flex items-center gap-3" style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.bg }}>
