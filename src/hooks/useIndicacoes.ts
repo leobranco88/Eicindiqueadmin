@@ -143,6 +143,6 @@ export function useIndicacoes() {
     cadastrando,
     cadastrarResponsavel,
     adicionarIndicacao,
-    ranking: calcularRanking(responsaveis, indicacoes),
+    ranking: calcularRanking(responsaveis ?? [], indicacoes ?? []),
   };
 }
