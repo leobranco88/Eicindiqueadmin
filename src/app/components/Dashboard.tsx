@@ -2,12 +2,12 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Plus, TrendingUp, Users, CheckCircle, Clock, Search, Filter, Crown, Star, Medal, Trophy, Rocket, ChevronRight } from "lucide-react";
-import { PageHeader } from "../PageHeader";
-import { StatsCard } from "../StatsCard";
-import { ReferralModal } from "../ReferralModal";
-import { RecentActivity } from "../RecentActivity";
-import { PerformanceChart } from "../PerformanceChart";
-import { LoyaltyCardPreview } from "../LoyaltyCardPreview";
+import { PageHeader } from "./PageHeader";
+import { StatsCard } from "./StatsCard";
+import { ReferralModal } from "./ReferralModal";
+import { RecentActivity } from "./RecentActivity";
+import { PerformanceChart } from "./PerformanceChart";
+import { LoyaltyCardPreview } from "./LoyaltyCardPreview";
 import { useIndicacoes, type StatusIndicacao } from "../../hooks/useIndicacoes";
 
 type Nivel = "Iniciante" | "Bronze" | "Prata" | "Ouro" | "Ambassador";
